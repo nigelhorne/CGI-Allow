@@ -97,6 +97,18 @@ sub allow {
 				return 0;
 			}
 		}
+
+		if(defined($ENV{'HTTP_REFERER'})) {
+			# Protect against Shellshocker
+			require Data::Validate::URI;
+			Data::Validate::URI->import();
+
+			$v = Data::Validate::URI->new();
+			unless($v->is_uri($ENV{'HTTP_REFERER'})) {
+				$status = 0;
+				return 0;
+			}
+		}
 	}
 	$status = 1;
 	return 1;
