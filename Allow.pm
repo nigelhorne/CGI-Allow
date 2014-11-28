@@ -86,7 +86,7 @@ sub allow {
 		}
 
 		my $params = $info->params();
-		if(defined($params) && keys($params)) {
+		if(defined($params) && keys(%{$params})) {
 			require CGI::IDS;
 			CGI::IDS->import();
 
