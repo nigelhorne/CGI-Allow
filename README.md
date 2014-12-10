@@ -21,3 +21,6 @@ unless(CGI::Allow::allow({ info => $info, lingua => $lingua }) {
 	print "Go away!\n";
 	die "Disallow access";
 }
+
+You can pass a logger argument for tracing what's going on.  logger should point to an object which takes methods such as trace,
+debug, warn, info.  Log4perl is a good example.

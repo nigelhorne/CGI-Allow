@@ -47,9 +47,17 @@ sub allow {
 	my %args = (ref($_[0]) eq 'HASH') ? %{$_[0]} : @_;
 
 	my $info = $args{'info'};
+	my $logger = $args{'logger'};
+	if($logger) {
+		$logger->trace('In ' . __PACKAGE__);
+	}
 
 	if(!defined($info)) {
-		carp('Info not given');
+		if($logger) {
+			$logger->warn('Info not given');
+		} else {
+			carp('Info not given');
+		}
 		$status = 1;
 		return 1;
 	}
@@ -71,16 +79,25 @@ sub allow {
 			);
 
 			unless($throttler->try_push(key => $ENV{'REMOTE_ADDR'})) {
+				if($logger) {
+					$logger->info("$ENV{REMOTE_ADDR} throttled");
+				}
 				$status = 0;
 				return 0;
 			}
 		};
 		if($@) {
+			if($logger) {
+				$logger->debug("removing $db_file");
+			}
 			unlink($db_file);
 		}
 
 		my $lingua = $args{'lingua'};
 		if(defined($lingua) && $blacklist{uc($lingua->country())}) {
+			if($logger) {
+				$logger->info('blocked connexion from ' . $lingua->country());
+			}
 			$status = 0;
 			return 0;
 		}
@@ -93,6 +110,9 @@ sub allow {
 			my $ids = CGI::IDS->new();
 			$ids->set_scan_keys(scan_keys => 1);
 			if($ids->detect_attacks(request => $params) > 0) {
+				if($logger) {
+					$logger->info('IDS blocked connexion for ' . $info->as_string());
+				}
 				$status = 0;
 				return 0;
 			}
@@ -105,10 +125,16 @@ sub allow {
 
 			$v = Data::Validate::URI->new();
 			unless($v->is_uri($ENV{'HTTP_REFERER'})) {
+				if($logger) {
+					$logger->info("Blocked shelshocker for $ENV{HTTP_REFERER}");
+				}
 				$status = 0;
 				return 0;
 			}
 		}
+	}
+	if($logger) {
+		$logger->debug('Allowing connexion');
 	}
 	$status = 1;
 	return 1;
