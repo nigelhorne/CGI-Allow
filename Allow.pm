@@ -126,7 +126,7 @@ sub allow {
 			$v = Data::Validate::URI->new();
 			unless($v->is_uri($ENV{'HTTP_REFERER'})) {
 				if($logger) {
-					$logger->info("Blocked shelshocker for $ENV{HTTP_REFERER}");
+					$logger->info("Blocked shellshocker for $ENV{HTTP_REFERER}");
 				}
 				$status = 0;
 				return 0;
