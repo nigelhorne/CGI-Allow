@@ -172,7 +172,9 @@ sub allow {
 		foreach my $source ($xml->findnodes('/sources/data')) {
 			my $lastseen = $source->findnodes('./lastseen')->to_literal();
 			next unless($lastseen eq $today);  # FIXME: Should be today or yesterday to avoid midnight rush
-			push @ips, $source->findnodes('./ip')->to_literal();
+			my $ip = $source->findnodes('./ip')->to_literal();
+			$ip =~ s/0*(\d+)/$1/g;	# Perl interprets numbers leading with 0 as octal
+			push @ips, $ip;
 		}
 		if(defined($cache) && !$readfromcache) {
 			my $cachecontent = join(',', @ips);
