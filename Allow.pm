@@ -168,20 +168,25 @@ sub allow {
 		if($logger) {
 			$logger->trace('Downloading DShield signatures');
 		}
-		my $xml = XML::LibXML->load_xml(string => get('https://secure.dshield.org/api/sources/attacks/100/2012-03-08'));
-		foreach my $source ($xml->findnodes('/sources/data')) {
-			my $lastseen = $source->findnodes('./lastseen')->to_literal();
-			next unless($lastseen eq $today);  # FIXME: Should be today or yesterday to avoid midnight rush
-			my $ip = $source->findnodes('./ip')->to_literal();
-			$ip =~ s/0*(\d+)/$1/g;	# Perl interprets numbers leading with 0 as octal
-			push @ips, $ip;
-		}
-		if(defined($cache) && !$readfromcache) {
-			my $cachecontent = join(',', @ips);
-			if($logger) {
-				$logger->debug("setting cache to $cachecontent");
+		my $xml;
+		eval {
+			$xml = XML::LibXML->load_xml(string => get('https://secure.dshield.org/api/sources/attacks/100/2012-03-08'));
+		};
+		unless($@ || !defined($xml)) {
+			foreach my $source ($xml->findnodes('/sources/data')) {
+				my $lastseen = $source->findnodes('./lastseen')->to_literal();
+				next unless($lastseen eq $today);  # FIXME: Should be today or yesterday to avoid midnight rush
+				my $ip = $source->findnodes('./ip')->to_literal();
+				$ip =~ s/0*(\d+)/$1/g;	# Perl interprets numbers leading with 0 as octal
+				push @ips, $ip;
 			}
-			$cache->set($today, $cachecontent, '1 day');
+			if(defined($cache) && !$readfromcache) {
+				my $cachecontent = join(',', @ips);
+				if($logger) {
+					$logger->debug("setting cache to $cachecontent");
+				}
+				$cache->set($today, $cachecontent, '1 day');
+			}
 		}
 	}
 
