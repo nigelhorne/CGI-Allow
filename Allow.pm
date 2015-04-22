@@ -58,6 +58,16 @@ sub allow {
 		$logger->trace('In ' . __PACKAGE__);
 	}
 
+	if($ENV{'HTTP_USER_AGENT'}) {
+		if($ENV{'HTTP_USER_AGENT'} =~ /masscan/) {
+			if($logger) {
+				$logger->info('Masscan blocked');
+			}
+			$status = 0;
+			return 0;
+		}
+	}
+
 	if(!defined($info)) {
 		if($logger) {
 			$logger->warn('Info not given');
