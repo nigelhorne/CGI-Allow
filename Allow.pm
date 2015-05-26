@@ -209,6 +209,14 @@ sub allow {
 		}
 	}
 
+	if($info->get_cookie(cookie_name => 'mycustomtrackid')) {
+		if($logger) {
+			$logger->info('Blocking possible jqic');
+		}
+		$status = 0;
+		return 0;
+	}
+
 	if($logger) {
 		$logger->trace("Allowing connexion from $ENV{REMOTE_ADDR}");
 	}
