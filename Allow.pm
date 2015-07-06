@@ -60,7 +60,7 @@ sub allow {
 
 	if($ENV{'HTTP_USER_AGENT'} && ($ENV{'HTTP_USER_AGENT'} =~ /masscan/)) {
 		if($logger) {
-			$logger->info('Masscan blocked');
+			$logger->warn('Masscan blocked');
 		}
 		$status = 0;
 		return 0;
@@ -94,7 +94,7 @@ sub allow {
 
 			unless($throttler->try_push(key => $ENV{'REMOTE_ADDR'})) {
 				if($logger) {
-					$logger->info("$ENV{REMOTE_ADDR} throttled");
+					$logger->warn("$ENV{REMOTE_ADDR} throttled");
 				}
 				$status = 0;
 				return 0;
@@ -110,7 +110,7 @@ sub allow {
 		my $lingua = $args{'lingua'};
 		if(defined($lingua) && $blacklist{uc($lingua->country())}) {
 			if($logger) {
-				$logger->info('blocked connexion from ' . $lingua->country());
+				$logger->warn('blocked connexion from ' . $lingua->country());
 			}
 			$status = 0;
 			return 0;
@@ -125,7 +125,7 @@ sub allow {
 			$ids->set_scan_keys(scan_keys => 1);
 			if($ids->detect_attacks(request => $params) > 0) {
 				if($logger) {
-					$logger->info('IDS blocked connexion for ' . $info->as_string());
+					$logger->warn('IDS blocked connexion for ' . $info->as_string());
 				}
 				$status = 0;
 				return 0;
@@ -140,7 +140,7 @@ sub allow {
 			$v = Data::Validate::URI->new();
 			unless($v->is_uri($ENV{'HTTP_REFERER'})) {
 				if($logger) {
-					$logger->info("Blocked shellshocker for $ENV{HTTP_REFERER}");
+					$logger->warn("Blocked shellshocker for $ENV{HTTP_REFERER}");
 				}
 				$status = 0;
 				return 0;
@@ -202,7 +202,7 @@ sub allow {
 		# FIXME: Doesn't realise 1.2.3.4 is the same as 001.002.003.004
 		if($ip eq $ENV{'REMOTE_ADDR'}) {
 			if($logger) {
-				$logger->info("Dshield blocked connexion from $ENV{REMOTE_ADDR}");
+				$logger->warn("Dshield blocked connexion from $ENV{REMOTE_ADDR}");
 			}
 			$status = 0;
 			return 0;
@@ -211,7 +211,7 @@ sub allow {
 
 	if($info->get_cookie(cookie_name => 'mycustomtrackid')) {
 		if($logger) {
-			$logger->info('Blocking possible jqic');
+			$logger->warn('Blocking possible jqic');
 		}
 		$status = 0;
 		return 0;
