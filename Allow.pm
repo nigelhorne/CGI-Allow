@@ -107,13 +107,15 @@ sub allow {
 			unlink($db_file);
 		}
 
-		my $lingua = $args{'lingua'};
-		if(defined($lingua) && $blacklist{uc($lingua->country())}) {
-			if($logger) {
-				$logger->warn('blocked connexion from ' . $lingua->country());
+		unless($ENV{'REMOTE_ADDR'} =~ /^192\.168\./) {
+			my $lingua = $args{'lingua'};
+			if(defined($lingua) && $blacklist{uc($lingua->country())}) {
+				if($logger) {
+					$logger->warn("$ENV{REMOTE_ADDR} blocked connexion from " . $lingua->country());
+				}
+				$status = 0;
+				return 0;
 			}
-			$status = 0;
-			return 0;
 		}
 
 		my $params = $info->params();
