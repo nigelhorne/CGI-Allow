@@ -127,7 +127,7 @@ sub allow {
 			$ids->set_scan_keys(scan_keys => 1);
 			if($ids->detect_attacks(request => $params) > 0) {
 				if($logger) {
-					$logger->warn('IDS blocked connexion for ' . $info->as_string());
+					$logger->warn("$ENV{REMOTE_ADDR}: IDS blocked connexion for " . $info->as_string());
 				}
 				$status = 0;
 				return 0;
