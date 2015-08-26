@@ -51,7 +51,6 @@ sub allow {
 
 	my %args = (ref($_[0]) eq 'HASH') ? %{$_[0]} : @_;
 
-	my $info = $args{'info'};
 	my $logger = $args{'logger'};
 
 	if($logger) {
@@ -66,6 +65,7 @@ sub allow {
 		return 0;
 	}
 
+	my $info = $args{'info'};
 	if(!defined($info)) {
 		if($logger) {
 			$logger->warn('Info not given');
