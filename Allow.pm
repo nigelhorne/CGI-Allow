@@ -93,6 +93,7 @@ sub allow {
 			);
 
 			unless($throttler->try_push(key => $ENV{'REMOTE_ADDR'})) {
+				# Recommend you send HTTP 429 at this point
 				if($logger) {
 					$logger->warn("$ENV{REMOTE_ADDR} throttled");
 				}
