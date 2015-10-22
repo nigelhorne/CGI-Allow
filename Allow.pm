@@ -16,7 +16,7 @@ package CGI::Allow;
 
 use Carp;
 
-our %blacklist = (
+our %blacklist_countries = (
 	'BY' => 1,
 	'MD' => 1,
 	'RU' => 1,
@@ -34,6 +34,11 @@ our %blacklist = (
 	'RS' => 1,
 	'PK' => 1,
 	'UA' => 1,
+);
+
+our %blacklist_agents = (
+	'masscan' => 'Masscan',
+	'WBSearchBot' => 'Warebay',
 );
 
 our $status = -1;
@@ -57,12 +62,15 @@ sub allow {
 		$logger->trace('In ' . __PACKAGE__);
 	}
 
-	if($ENV{'HTTP_USER_AGENT'} && ($ENV{'HTTP_USER_AGENT'} =~ /masscan/)) {
-		if($logger) {
-			$logger->warn('Masscan blocked');
+	if($ENV{'HTTP_USER_AGENT'}) {
+		my $blocked = $blacklist_agents{$ENV{'HTTP_USER_AGENT'}};
+		if($blocked) {
+			if($logger) {
+				$logger->warn("$blocked blocked");
+			}
+			$status = 0;
+			return 0;
 		}
-		$status = 0;
-		return 0;
 	}
 
 	my $info = $args{'info'};
@@ -110,7 +118,7 @@ sub allow {
 
 		unless($ENV{'REMOTE_ADDR'} =~ /^192\.168\./) {
 			my $lingua = $args{'lingua'};
-			if(defined($lingua) && $blacklist{uc($lingua->country())}) {
+			if(defined($lingua) && $blacklist_countries{uc($lingua->country())}) {
 				if($logger) {
 					$logger->warn("$ENV{REMOTE_ADDR} blocked connexion from " . $lingua->country());
 				}
