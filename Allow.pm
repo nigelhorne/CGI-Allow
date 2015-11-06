@@ -39,6 +39,8 @@ our %blacklist_countries = (
 our %blacklist_agents = (
 	'masscan' => 'Masscan',
 	'WBSearchBot' => 'Warebay',
+	'MJ12' => 'Majestic',
+	'Mozilla/4.0 (compatible; Vagabondo/4.0; webcrawler at wise-guys dot nl; http://webagent.wise-guys.nl/; http://www.wise-guys.nl/)' => 'wise-guys',
 );
 
 our $status = -1;
