@@ -143,6 +143,7 @@ sub allow {
 			unless($v->is_uri($ENV{'HTTP_REFERER'})) {
 				if($logger) {
 					$logger->warn("Blocked shellshocker for $ENV{HTTP_REFERER}");
+					$logger->warn("$ENV{REMOTE_ADDR}: Blocked shellshocker for $ENV{HTTP_REFERER}");
 				}
 				$status = 0;
 				return 0;
