@@ -16,7 +16,7 @@ package CGI::Allow;
 
 use Carp;
 
-our %blacklist = (
+our %blacklist_countries = (
 	'BY' => 1,
 	'MD' => 1,
 	'RU' => 1,
@@ -36,6 +36,13 @@ our %blacklist = (
 	'UA' => 1,
 );
 
+our %blacklist_agents = (
+	'masscan' => 'Masscan',
+	'WBSearchBot' => 'Warebay',
+	'MJ12' => 'Majestic',
+	'Mozilla/4.0 (compatible; Vagabondo/4.0; webcrawler at wise-guys dot nl; http://webagent.wise-guys.nl/; http://www.wise-guys.nl/)' => 'wise-guys',
+);
+
 our $status = -1;
 
 sub allow {
@@ -51,21 +58,24 @@ sub allow {
 
 	my %args = (ref($_[0]) eq 'HASH') ? %{$_[0]} : @_;
 
-	my $info = $args{'info'};
 	my $logger = $args{'logger'};
 
 	if($logger) {
 		$logger->trace('In ' . __PACKAGE__);
 	}
 
-	if($ENV{'HTTP_USER_AGENT'} && ($ENV{'HTTP_USER_AGENT'} =~ /masscan/)) {
-		if($logger) {
-			$logger->warn('Masscan blocked');
+	if($ENV{'HTTP_USER_AGENT'}) {
+		my $blocked = $blacklist_agents{$ENV{'HTTP_USER_AGENT'}};
+		if($blocked) {
+			if($logger) {
+				$logger->warn("$blocked blocked");
+			}
+			$status = 0;
+			return 0;
 		}
-		$status = 0;
-		return 0;
 	}
 
+	my $info = $args{'info'};
 	if(!defined($info)) {
 		if($logger) {
 			$logger->warn('Info not given');
@@ -93,6 +103,7 @@ sub allow {
 			);
 
 			unless($throttler->try_push(key => $ENV{'REMOTE_ADDR'})) {
+				# Recommend you send HTTP 429 at this point
 				if($logger) {
 					$logger->warn("$ENV{REMOTE_ADDR} throttled");
 				}
@@ -109,7 +120,7 @@ sub allow {
 
 		unless($ENV{'REMOTE_ADDR'} =~ /^192\.168\./) {
 			my $lingua = $args{'lingua'};
-			if(defined($lingua) && $blacklist{uc($lingua->country())}) {
+			if(defined($lingua) && $blacklist_countries{uc($lingua->country())}) {
 				if($logger) {
 					$logger->warn("$ENV{REMOTE_ADDR} blocked connexion from " . $lingua->country());
 				}
