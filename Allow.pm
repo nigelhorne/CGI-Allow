@@ -14,7 +14,10 @@ package CGI::Allow;
 # Usage:
 # unless(CGI::Allow::allow({info => $info, lingua => $lingua})) {
 
+use strict;
+use warnings;
 use Carp;
+use File::Spec;
 
 our %blacklist_countries = (
 	'BY' => 1,
@@ -68,7 +71,7 @@ sub allow {
 		my $blocked = $blacklist_agents{$ENV{'HTTP_USER_AGENT'}};
 		if($blocked) {
 			if($logger) {
-				$logger->warn("$blocked blocked");
+				$logger->warn("$blocked is blacklisted");
 			}
 			$status = 0;
 			return 0;
@@ -91,7 +94,7 @@ sub allow {
 		Data::Throttler->import();
 
 		# Handle YAML Errors
-		my $db_file = $info->tmpdir() . '/throttle';
+		my $db_file = File::Spec->catfile($info->tmpdir(), '/throttle');
 		eval {
 			my $throttler = Data::Throttler->new(
 				max_items => 15,
@@ -105,7 +108,7 @@ sub allow {
 			unless($throttler->try_push(key => $ENV{'REMOTE_ADDR'})) {
 				# Recommend you send HTTP 429 at this point
 				if($logger) {
-					$logger->warn("$ENV{REMOTE_ADDR} throttled");
+					$logger->warn("$ENV{REMOTE_ADDR} has been throttled");
 				}
 				$status = 0;
 				return 0;
@@ -150,7 +153,7 @@ sub allow {
 			require Data::Validate::URI;
 			Data::Validate::URI->import();
 
-			$v = Data::Validate::URI->new();
+			my $v = Data::Validate::URI->new();
 			unless($v->is_uri($ENV{'HTTP_REFERER'})) {
 				if($logger) {
 					$logger->warn("Blocked shellshocker for $ENV{HTTP_REFERER}");
