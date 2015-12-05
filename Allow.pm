@@ -44,6 +44,7 @@ our %blacklist_agents = (
 	'WBSearchBot' => 'Warebay',
 	'MJ12' => 'Majestic',
 	'Mozilla/4.0 (compatible; Vagabondo/4.0; webcrawler at wise-guys dot nl; http://webagent.wise-guys.nl/; http://www.wise-guys.nl/)' => 'wise-guys',
+	'zgrab' => 'Mozilla/5.0 zgrab/0.x',
 );
 
 our $status = -1;
