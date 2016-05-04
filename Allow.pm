@@ -1,7 +1,7 @@
 package CGI::Allow;
 
 # Author Nigel Horne: njh@bandsman.co.uk
-# Copyright (C) 2014-2015, Nigel Horne
+# Copyright (C) 2014-2016, Nigel Horne
 
 # Usage is subject to licence terms.
 # The licence terms of this software are as follows:
@@ -127,6 +127,14 @@ sub allow {
 			if(defined($lingua) && $blacklist_countries{uc($lingua->country())}) {
 				if($logger) {
 					$logger->warn("$ENV{REMOTE_ADDR} blocked connexion from " . $lingua->country());
+				}
+				$status = 0;
+				return 0;
+			}
+			if(($ENV{'HTTP_REFERER'} =~ /^http:\/\/keywords-monitoring-your-success.com\/try.php/) ||
+			   ($ENV{'HTTP_REFERER'} =~ /^http:\/\/free-video-tool.com\//)) {
+				if($logger) {
+					$logger->warn("$ENV{REMOTE_ADDR}: Blocked trawler");
 				}
 				$status = 0;
 				return 0;
