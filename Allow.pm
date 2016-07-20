@@ -141,19 +141,21 @@ sub allow {
 			}
 		}
 
-		my $params = $info->params();
-		if(defined($params) && keys(%{$params})) {
-			require CGI::IDS;
-			CGI::IDS->import();
+		if($ENV{'REQUEST_METHOD'} eq 'GET') {
+			my $params = $info->params();
+			if(defined($params) && keys(%{$params})) {
+				require CGI::IDS;
+				CGI::IDS->import();
 
-			my $ids = CGI::IDS->new();
-			$ids->set_scan_keys(scan_keys => 1);
-			if($ids->detect_attacks(request => $params) > 0) {
-				if($logger) {
-					$logger->warn("$ENV{REMOTE_ADDR}: IDS blocked connexion for " . $info->as_string());
+				my $ids = CGI::IDS->new();
+				$ids->set_scan_keys(scan_keys => 1);
+				if($ids->detect_attacks(request => $params) > 0) {
+					if($logger) {
+						$logger->warn("$ENV{REMOTE_ADDR}: IDS blocked connexion for " . $info->as_string());
+					}
+					$status = 0;
+					return 0;
 				}
-				$status = 0;
-				return 0;
 			}
 		}
 

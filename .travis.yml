@@ -8,4 +8,4 @@ install:
   - cpanm --installdeps --notest Carp Data::Throttler CGI::IDS Data::Validate::URI DateTime LWP::Simple XML::LibXML
   - cpanm --notest Carp Data::Throttler CGI::IDS Data::Validate::URI DateTime LWP::Simple XML::LibXML
 script:
-  - perl -c Allow.pm
+  - perl -MO=Lint Allow.pm
