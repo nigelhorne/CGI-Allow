@@ -5,7 +5,7 @@ perl:
   - "5.16"
   - "5.14"
 install:
-  - cpanm --installdeps --notest Carp Data::Throttler CGI::IDS Data::Validate::URI DateTime LWP::Simple XML::LibXML
-  - cpanm --notest Carp Data::Throttler CGI::IDS Data::Validate::URI DateTime LWP::Simple XML::LibXML
+  - cpanm --installdeps --notest Carp Data::Throttler CGI::IDS Data::Validate::URI DateTime LWP::Simple XML::LibXML B::Lint
+  - cpanm --notest Carp Data::Throttler CGI::IDS Data::Validate::URI DateTime LWP::Simple XML::LibXML B::Lint
 script:
   - perl -MO=Lint Allow.pm
