@@ -132,6 +132,7 @@ sub allow {
 				return 0;
 			}
 			if(($ENV{'HTTP_REFERER'} =~ /^http:\/\/keywords-monitoring-your-success.com\/try.php/) ||
+			   ($ENV{'HTTP_REFERER'} =~ /^http:\/\/www.tcsindustry\.com\//) ||
 			   ($ENV{'HTTP_REFERER'} =~ /^http:\/\/free-video-tool.com\//)) {
 				if($logger) {
 					$logger->warn("$ENV{REMOTE_ADDR}: Blocked trawler");
