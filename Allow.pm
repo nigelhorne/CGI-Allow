@@ -228,7 +228,7 @@ sub allow {
 	}
 
 	# FIXME: Doesn't realise 1.2.3.4 is the same as 001.002.003.004
-	if(grep($ENV{'REMOTE_ADDR'}, @ips)) {
+	if(grep($_ eq $ENV{'REMOTE_ADDR'}, @ips)) {
 		if($logger) {
 			$logger->warn("Dshield blocked connexion from $ENV{REMOTE_ADDR}");
 		}
