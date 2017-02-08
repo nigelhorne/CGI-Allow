@@ -1,7 +1,7 @@
 package CGI::Allow;
 
 # Author Nigel Horne: njh@bandsman.co.uk
-# Copyright (C) 2014-2016, Nigel Horne
+# Copyright (C) 2014-2017, Nigel Horne
 
 # Usage is subject to licence terms.
 # The licence terms of this software are as follows:
@@ -47,22 +47,27 @@ our %blacklist_agents = (
 	'zgrab' => 'Mozilla/5.0 zgrab/0.x',
 );
 
-our $status = -1;
+our %status;
 
 sub allow {
-	unless($status == -1) {
-		# Cache the value
-		return $status;
-	}
 	if(!defined($ENV{'REMOTE_ADDR'})) {
 		# Not running as a CGI
-		$status = 1;
 		return 1;
 	}
 
 	my %args = (ref($_[0]) eq 'HASH') ? %{$_[0]} : @_;
 
 	my $logger = $args{'logger'};
+	my $addr = $ENV{'REMOTE_ADDR'};
+
+	if(defined($status{$addr})) {
+		# Cache the value
+		if($logger) {
+			$logger->info("$addr: cached value " . $status{$addr});
+		}
+		return $status{$addr};
+	}
+
 
 	if($logger) {
 		$logger->trace('In ' . __PACKAGE__);
@@ -74,7 +79,7 @@ sub allow {
 			if($logger) {
 				$logger->warn("$blocked is blacklisted");
 			}
-			$status = 0;
+			$status{$addr} = 0;
 			return 0;
 		}
 	}
@@ -86,7 +91,7 @@ sub allow {
 		} else {
 			carp('Info not given');
 		}
-		$status = 1;
+		$status{$addr} = 1;
 		return 1;
 	}
 
@@ -111,7 +116,7 @@ sub allow {
 				if($logger) {
 					$logger->warn("$ENV{REMOTE_ADDR} has been throttled");
 				}
-				$status = 0;
+				$status{$addr} = 0;
 				return 0;
 			}
 		};
@@ -128,7 +133,7 @@ sub allow {
 				if($logger) {
 					$logger->warn("$ENV{REMOTE_ADDR} blocked connexion from " . $lingua->country());
 				}
-				$status = 0;
+				$status{$addr} = 0;
 				return 0;
 			}
 			if(($ENV{'HTTP_REFERER'} =~ /^http:\/\/keywords-monitoring-your-success.com\/try.php/) ||
@@ -137,7 +142,7 @@ sub allow {
 				if($logger) {
 					$logger->warn("$ENV{REMOTE_ADDR}: Blocked trawler");
 				}
-				$status = 0;
+				$status{$addr} = 0;
 				return 0;
 			}
 		}
@@ -154,7 +159,7 @@ sub allow {
 					if($logger) {
 						$logger->warn("$ENV{REMOTE_ADDR}: IDS blocked connexion for " . $info->as_string());
 					}
-					$status = 0;
+					$status{$addr} = 0;
 					return 0;
 				}
 			}
@@ -171,7 +176,7 @@ sub allow {
 					$logger->warn("Blocked shellshocker for $ENV{HTTP_REFERER}");
 					$logger->warn("$ENV{REMOTE_ADDR}: Blocked shellshocker for $ENV{HTTP_REFERER}");
 				}
-				$status = 0;
+				$status{$addr} = 0;
 				return 0;
 			}
 		}
@@ -232,7 +237,7 @@ sub allow {
 		if($logger) {
 			$logger->warn("Dshield blocked connexion from $ENV{REMOTE_ADDR}");
 		}
-		$status = 0;
+		$status{$addr} = 0;
 		return 0;
 	}
 
@@ -240,7 +245,7 @@ sub allow {
 		if($logger) {
 			$logger->warn('Blocking possible jqic');
 		}
-		$status = 0;
+		$status{$addr} = 0;
 		return 0;
 	}
 
@@ -248,7 +253,7 @@ sub allow {
 		$logger->trace("Allowing connexion from $ENV{REMOTE_ADDR}");
 	}
 
-	$status = 1;
+	$status{$addr} = 1;
 	return 1;
 }
 
