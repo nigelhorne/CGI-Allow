@@ -165,15 +165,15 @@ sub allow {
 			}
 		}
 
-		if(defined($ENV{'HTTP_REFERER'})) {
+		if(my $referer = $ENV{'HTTP_REFERER'}) {
+			$referer =~ tr/ /+/;	# FIXME - this shouldn't be happening
+
 			# Protect against Shellshocker
 			require Data::Validate::URI;
 			Data::Validate::URI->import();
 
-			my $v = Data::Validate::URI->new();
-			unless($v->is_uri($ENV{'HTTP_REFERER'})) {
+			unless(Data::Validate::URI->new()->is_uri($referer)) {
 				if($logger) {
-					$logger->warn("Blocked shellshocker for $ENV{HTTP_REFERER}");
 					$logger->warn("$ENV{REMOTE_ADDR}: Blocked shellshocker for $ENV{HTTP_REFERER}");
 				}
 				$status{$addr} = 0;
