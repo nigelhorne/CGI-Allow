@@ -111,10 +111,10 @@ sub allow {
 				}
 			);
 
-			unless($throttler->try_push(key => $ENV{'REMOTE_ADDR'})) {
+			unless($throttler->try_push(key => $addr)) {
 				# Recommend you send HTTP 429 at this point
 				if($logger) {
-					$logger->warn("$ENV{REMOTE_ADDR} has been throttled");
+					$logger->warn("$addr has been throttled");
 				}
 				$status{$addr} = 0;
 				return 0;
@@ -127,11 +127,11 @@ sub allow {
 			unlink($db_file);
 		}
 
-		unless($ENV{'REMOTE_ADDR'} =~ /^192\.168\./) {
+		unless($addr =~ /^192\.168\./) {
 			my $lingua = $args{'lingua'};
 			if(defined($lingua) && $blacklist_countries{uc($lingua->country())}) {
 				if($logger) {
-					$logger->warn("$ENV{REMOTE_ADDR} blocked connexion from " . $lingua->country());
+					$logger->warn("$addr blocked connexion from " . $lingua->country());
 				}
 				$status{$addr} = 0;
 				return 0;
@@ -140,7 +140,7 @@ sub allow {
 			   ($ENV{'HTTP_REFERER'} =~ /^http:\/\/www.tcsindustry\.com\//) ||
 			   ($ENV{'HTTP_REFERER'} =~ /^http:\/\/free-video-tool.com\//)) {
 				if($logger) {
-					$logger->warn("$ENV{REMOTE_ADDR}: Blocked trawler");
+					$logger->warn("$addr: Blocked trawler");
 				}
 				$status{$addr} = 0;
 				return 0;
@@ -157,7 +157,7 @@ sub allow {
 				$ids->set_scan_keys(scan_keys => 1);
 				if($ids->detect_attacks(request => $params) > 0) {
 					if($logger) {
-						$logger->warn("$ENV{REMOTE_ADDR}: IDS blocked connexion for " . $info->as_string());
+						$logger->warn("$addr: IDS blocked connexion for " . $info->as_string());
 					}
 					$status{$addr} = 0;
 					return 0;
@@ -174,7 +174,7 @@ sub allow {
 
 			unless(Data::Validate::URI->new()->is_uri($referer)) {
 				if($logger) {
-					$logger->warn("$ENV{REMOTE_ADDR}: Blocked shellshocker for $ENV{HTTP_REFERER}");
+					$logger->warn("$addr: Blocked shellshocker for $ENV{HTTP_REFERER}");
 				}
 				$status{$addr} = 0;
 				return 0;
@@ -233,9 +233,9 @@ sub allow {
 	}
 
 	# FIXME: Doesn't realise 1.2.3.4 is the same as 001.002.003.004
-	if(grep($_ eq $ENV{'REMOTE_ADDR'}, @ips)) {
+	if(grep($_ eq $addr, @ips)) {
 		if($logger) {
-			$logger->warn("Dshield blocked connexion from $ENV{REMOTE_ADDR}");
+			$logger->warn("Dshield blocked connexion from $addr");
 		}
 		$status{$addr} = 0;
 		return 0;
@@ -250,7 +250,7 @@ sub allow {
 	}
 
 	if($logger) {
-		$logger->trace("Allowing connexion from $ENV{REMOTE_ADDR}");
+		$logger->trace("Allowing connexion from $addr");
 	}
 
 	$status{$addr} = 1;
