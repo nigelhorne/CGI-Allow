@@ -1,5 +1,6 @@
 language: perl
 perl:
+  - "5.26"
   - "5.24"
   - "5.22"
   - "5.20"
@@ -7,7 +8,8 @@ perl:
   - "5.16"
   - "5.14"
 install:
-  - cpanm --installdeps --notest Carp Data::Throttler CGI::IDS Data::Validate::URI DateTime LWP::Simple XML::LibXML B::Lint
-  - cpanm --notest Carp Data::Throttler CGI::IDS Data::Validate::URI DateTime LWP::Simple XML::LibXML B::Lint
+  - cpanm --installdeps --notest Carp Data::Throttler CGI::IDS Data::Validate::URI DateTime LWP::Simple XML::LibXML B::Lint warnings::unused
+  - cpanm --notest Carp Data::Throttler CGI::IDS Data::Validate::URI DateTime LWP::Simple XML::LibXML B::Lint warnings::unused
 script:
   - perl -MO=Lint Allow.pm
+  - perl -c -Mwarnings::unused Allow.pm
