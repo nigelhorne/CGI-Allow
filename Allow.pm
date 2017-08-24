@@ -197,7 +197,14 @@ sub allow {
 				$logger->debug("read from cache $cachecontent");
 			}
 			@ips = split(/,/, $cachecontent);
-			$readfromcache = 1;
+			if($ips[0]) {
+				$readfromcache = 1;
+			} else {
+				if($logger) {
+					$logger->info("DShield cache for $today is empty, deleting to force reread");
+				}
+				$cache->remove($today);
+			}
 		}
 	}
 
