@@ -12,8 +12,7 @@ install:
   - cpanm --notest Carp Data::Throttler CGI::IDS Data::Validate::URI DateTime LWP::Simple XML::LibXML B::Lint warnings::unused
   - 'echo End install at: & time /t'
 
-build:
-  - 'echo nothing to build'
+build: off
 
 test_script:
   - perl -MO=Lint Allow.pm
