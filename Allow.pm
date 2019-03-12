@@ -241,7 +241,7 @@ sub allow {
 			if(defined($cache) && $ips[0] && !$readfromcache) {
 				my $cachecontent = join(',', @ips);
 				if($logger) {
-					$logger->info("Setting DShield cache to $cachecontent");
+					$logger->info("Setting DShield cache for $today to $cachecontent");
 				}
 				$cache->set($today, $cachecontent, '1 day');
 			}
