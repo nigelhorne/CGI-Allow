@@ -1,7 +1,7 @@
 package CGI::Allow;
 
 # Author Nigel Horne: njh@bandsman.co.uk
-# Copyright (C) 2014-2015, Nigel Horne
+# Copyright (C) 2014-2019, Nigel Horne
 
 # Usage is subject to licence terms.
 # The licence terms of this software are as follows:
@@ -36,17 +36,31 @@ our %blacklist = (
 	'UA' => 1,
 );
 
-our $status = -1;
+our %blacklist_agents = (
+	'Barkrowler' => 'Barkrowler',
+	'masscan' => 'Masscan',
+	'WBSearchBot' => 'Warebay',
+	'MJ12' => 'Majestic',
+	'Mozilla/4.0 (compatible; Vagabondo/4.0; webcrawler at wise-guys dot nl; http://webagent.wise-guys.nl/; http://www.wise-guys.nl/)' => 'wise-guys',
+	'Mozilla/5.0 zgrab/0.x' => 'zgrab',
+	'Mozilla/5.0 (compatible; IODC-Odysseus Survey 21796-100-051215155936-107; +https://iodc.co.uk)' => 'iodc',
+	'Mozilla/5.0 (compatible; adscanner/)' => 'adscanner',
+	'ZoominfoBot (zoominfobot at zoominfo dot com)' => 'zoominfobot',
+);
+
+our %status;
 
 sub allow {
-	unless($status == -1) {
+	my $addr = $ENV{'REMOTE_ADDR'};
+
+	if(!defined($addr)) {
+		# Not running as a CGI
+		return 1;
+	}
+
+	if(defined($status{$addr})) {
 		# Cache the value
 		return $status;
-	}
-	if(!defined($ENV{'REMOTE_ADDR'})) {
-		# Not running as a CGI
-		$status = 1;
-		return 1;
 	}
 
 	my %args = (ref($_[0]) eq 'HASH') ? %{$_[0]} : @_;
@@ -55,15 +69,17 @@ sub allow {
 	my $logger = $args{'logger'};
 
 	if($logger) {
-		$logger->trace('In ' . __PACKAGE__);
+		$logger->trace('In ', __PACKAGE__);
 	}
 
-	if($ENV{'HTTP_USER_AGENT'} && ($ENV{'HTTP_USER_AGENT'} =~ /masscan/)) {
-		if($logger) {
-			$logger->warn('Masscan blocked');
+	if($ENV{'HTTP_USER_AGENT'}) {
+		if(my $blocked = $blacklist_agents{$ENV{'HTTP_USER_AGENT'}}) {
+			if($logger) {
+				$logger->info("$blocked blacklisted");
+			}
+			$status = 0;
+			return 0;
 		}
-		$status = 0;
-		return 0;
 	}
 
 	if(!defined($info)) {
@@ -92,9 +108,9 @@ sub allow {
 				}
 			);
 
-			unless($throttler->try_push(key => $ENV{'REMOTE_ADDR'})) {
+			unless($throttler->try_push(key => $addr)) {
 				if($logger) {
-					$logger->warn("$ENV{REMOTE_ADDR} throttled");
+					$logger->warn("$addr throttled");
 				}
 				$status = 0;
 				return 0;
@@ -107,11 +123,11 @@ sub allow {
 			unlink($db_file);
 		}
 
-		unless($ENV{'REMOTE_ADDR'} =~ /^192\.168\./) {
+		unless($addr =~ /^192\.168\./) {
 			my $lingua = $args{'lingua'};
 			if(defined($lingua) && $blacklist{uc($lingua->country())}) {
 				if($logger) {
-					$logger->warn("$ENV{REMOTE_ADDR} blocked connexion from " . $lingua->country());
+					$logger->warn("$addr blocked connexion from ", $lingua->country());
 				}
 				$status = 0;
 				return 0;
@@ -127,7 +143,7 @@ sub allow {
 			$ids->set_scan_keys(scan_keys => 1);
 			if($ids->detect_attacks(request => $params) > 0) {
 				if($logger) {
-					$logger->warn("$ENV{REMOTE_ADDR}: IDS blocked connexion for " . $info->as_string());
+					$logger->warn("$addr: IDS blocked connexion for ", $info->as_string());
 				}
 				$status = 0;
 				return 0;
@@ -200,15 +216,13 @@ sub allow {
 		}
 	}
 
-	foreach my $ip (@ips) {
-		# FIXME: Doesn't realise 1.2.3.4 is the same as 001.002.003.004
-		if($ip eq $ENV{'REMOTE_ADDR'}) {
-			if($logger) {
-				$logger->warn("Dshield blocked connexion from $ENV{REMOTE_ADDR}");
-			}
-			$status = 0;
-			return 0;
+	# FIXME: Doesn't realise 1.2.3.4 is the same as 001.002.003.004
+	if(grep($_ eq $addr, @ips)) {
+		if($logger) {
+			$logger->warn("Dshield blocked connexion from $addr");
 		}
+		$status = 0;
+		return 0;
 	}
 
 	if($info->get_cookie(cookie_name => 'mycustomtrackid')) {
@@ -220,7 +234,7 @@ sub allow {
 	}
 
 	if($logger) {
-		$logger->trace("Allowing connexion from $ENV{REMOTE_ADDR}");
+		$logger->trace("Allowing connexion from $addr");
 	}
 
 	$status = 1;
