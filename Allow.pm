@@ -14,9 +14,12 @@ package CGI::Allow;
 # Usage:
 # unless(CGI::Allow::allow({info => $info, lingua => $lingua})) {
 
+use strict;
+use warnings;
 use Carp;
+use File::Spec;
 
-our %blacklist = (
+our %blacklist_countries = (
 	'BY' => 1,
 	'MD' => 1,
 	'RU' => 1,
@@ -60,13 +63,22 @@ sub allow {
 
 	if(defined($status{$addr})) {
 		# Cache the value
-		return $status;
+		return $status{$addr};
 	}
 
 	my %args = (ref($_[0]) eq 'HASH') ? %{$_[0]} : @_;
 
-	my $info = $args{'info'};
 	my $logger = $args{'logger'};
+	my $addr = $ENV{'REMOTE_ADDR'};
+
+	if(defined($status{$addr})) {
+		# Cache the value
+		if($logger) {
+			$logger->debug("$addr: cached value ", $status{$addr});
+		}
+		return $status{$addr};
+	}
+
 
 	if($logger) {
 		$logger->trace('In ', __PACKAGE__);
@@ -77,18 +89,19 @@ sub allow {
 			if($logger) {
 				$logger->info("$blocked blacklisted");
 			}
-			$status = 0;
+			$status{$addr} = 0;
 			return 0;
 		}
 	}
 
+	my $info = $args{'info'};
 	if(!defined($info)) {
 		if($logger) {
 			$logger->warn('Info not given');
 		} else {
 			carp('Info not given');
 		}
-		$status = 1;
+		$status{$addr} = 1;
 		return 1;
 	}
 
@@ -97,7 +110,7 @@ sub allow {
 		Data::Throttler->import();
 
 		# Handle YAML Errors
-		my $db_file = $info->tmpdir() . '/throttle';
+		my $db_file = File::Spec->catfile($info->tmpdir(), '/throttle');
 		eval {
 			my $throttler = Data::Throttler->new(
 				max_items => 15,
@@ -110,9 +123,9 @@ sub allow {
 
 			unless($throttler->try_push(key => $addr)) {
 				if($logger) {
-					$logger->warn("$addr throttled");
+					$logger->warn("$addr has been throttled");
 				}
-				$status = 0;
+				$status{$addr} = 0;
 				return 0;
 			}
 		};
@@ -125,42 +138,54 @@ sub allow {
 
 		unless($addr =~ /^192\.168\./) {
 			my $lingua = $args{'lingua'};
-			if(defined($lingua) && $blacklist{uc($lingua->country())}) {
+			if(defined($lingua) && $blacklist_countries{uc($lingua->country())}) {
 				if($logger) {
 					$logger->warn("$addr blocked connexion from ", $lingua->country());
 				}
-				$status = 0;
+				$status{$addr} = 0;
 				return 0;
 			}
-		}
-
-		my $params = $info->params();
-		if(defined($params) && keys(%{$params})) {
-			require CGI::IDS;
-			CGI::IDS->import();
-
-			my $ids = CGI::IDS->new();
-			$ids->set_scan_keys(scan_keys => 1);
-			if($ids->detect_attacks(request => $params) > 0) {
+			if(($ENV{'HTTP_REFERER'} =~ /^http:\/\/keywords-monitoring-your-success.com\/try.php/) ||
+			   ($ENV{'HTTP_REFERER'} =~ /^http:\/\/www.tcsindustry\.com\//) ||
+			   ($ENV{'HTTP_REFERER'} =~ /^http:\/\/free-video-tool.com\//)) {
 				if($logger) {
-					$logger->warn("$addr: IDS blocked connexion for ", $info->as_string());
+					$logger->warn("$addr blocked connexion from ", $lingua->country());
 				}
-				$status = 0;
+				$status{$addr} = 0;
 				return 0;
 			}
 		}
 
-		if(defined($ENV{'HTTP_REFERER'})) {
+		if(defined($ENV{'REQUEST_METHOD'}) && ($ENV{'REQUEST_METHOD'} eq 'GET')) {
+			my $params = $info->params();
+			if(defined($params) && keys(%{$params})) {
+				require CGI::IDS;
+				CGI::IDS->import();
+
+				my $ids = CGI::IDS->new();
+				$ids->set_scan_keys(scan_keys => 1);
+				if($ids->detect_attacks(request => $params) > 0) {
+					if($logger) {
+						$logger->warn("$addr: IDS blocked connexion for ", $info->as_string());
+					}
+					$status{$addr} = 0;
+					return 0;
+				}
+			}
+		}
+
+		if(my $referer = $ENV{'HTTP_REFERER'}) {
+			$referer =~ tr/ /+/;	# FIXME - this shouldn't be happening
+
 			# Protect against Shellshocker
 			require Data::Validate::URI;
 			Data::Validate::URI->import();
 
-			$v = Data::Validate::URI->new();
-			unless($v->is_uri($ENV{'HTTP_REFERER'})) {
+			unless(Data::Validate::URI->new()->is_uri($referer)) {
 				if($logger) {
-					$logger->warn("Blocked shellshocker for $ENV{HTTP_REFERER}");
+					$logger->warn("$addr: Blocked shellshocker for $ENV{HTTP_REFERER}");
 				}
-				$status = 0;
+				$status{$addr} = 0;
 				return 0;
 			}
 		}
@@ -181,7 +206,14 @@ sub allow {
 				$logger->debug("read from cache $cachecontent");
 			}
 			@ips = split(/,/, $cachecontent);
-			$readfromcache = 1;
+			if($ips[0]) {
+				$readfromcache = 1;
+			} else {
+				if($logger) {
+					$logger->info("DShield cache for $today is empty, deleting to force reread");
+				}
+				$cache->remove($today);
+			}
 		}
 	}
 
@@ -201,15 +233,15 @@ sub allow {
 		unless($@ || !defined($xml)) {
 			foreach my $source ($xml->findnodes('/sources/data')) {
 				my $lastseen = $source->findnodes('./lastseen')->to_literal();
-				next unless($lastseen eq $today);  # FIXME: Should be today or yesterday to avoid midnight rush
+				next if($readfromcache && ($lastseen ne $today));  # FIXME: Should be today or yesterday to avoid midnight rush
 				my $ip = $source->findnodes('./ip')->to_literal();
 				$ip =~ s/0*(\d+)/$1/g;	# Perl interprets numbers leading with 0 as octal
 				push @ips, $ip;
 			}
-			if(defined($cache) && !$readfromcache) {
+			if(defined($cache) && $ips[0] && !$readfromcache) {
 				my $cachecontent = join(',', @ips);
 				if($logger) {
-					$logger->debug("setting DShield cache to $cachecontent");
+					$logger->info("Setting DShield cache to $cachecontent");
 				}
 				$cache->set($today, $cachecontent, '1 day');
 			}
@@ -221,7 +253,7 @@ sub allow {
 		if($logger) {
 			$logger->warn("Dshield blocked connexion from $addr");
 		}
-		$status = 0;
+		$status{$addr} = 0;
 		return 0;
 	}
 
@@ -229,7 +261,7 @@ sub allow {
 		if($logger) {
 			$logger->warn('Blocking possible jqic');
 		}
-		$status = 0;
+		$status{$addr} = 0;
 		return 0;
 	}
 
@@ -237,7 +269,7 @@ sub allow {
 		$logger->trace("Allowing connexion from $addr");
 	}
 
-	$status = 1;
+	$status{$addr} = 1;
 	return 1;
 }
 
