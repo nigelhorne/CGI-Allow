@@ -29,7 +29,8 @@ install:
   - cpanm --notest Carp Data::Throttler CGI::IDS Data::Validate::URI DateTime LWP::Simple XML::LibXML B::Lint warnings::unused
 
 script:
-  perl Makefile.PL && make && cover -test -report coveralls
+  - perl -MO=Lint Allow.pm
+  - perl -cwT -Mwarnings::unused Allow.pm
 
 jobs:
   include:
