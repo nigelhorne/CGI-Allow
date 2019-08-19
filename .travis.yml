@@ -40,7 +40,7 @@ jobs:
       before_install:
         - cinst -y strawberryperl
         - export "PATH=/c/Strawberry/perl/site/bin:/c/Strawberry/perl/bin:/c/Strawberry/c/bin:$PATH"
-      # install:
+      install:
         # - cpanm --notest --installdeps .
       script:
 	- perl -MO=Lint Allow.pm
