@@ -70,7 +70,6 @@ sub allow {
 	my %args = (ref($_[0]) eq 'HASH') ? %{$_[0]} : @_;
 
 	my $logger = $args{'logger'};
-	my $addr = $ENV{'REMOTE_ADDR'};
 
 	if(defined($status{$addr})) {
 		# Cache the value
