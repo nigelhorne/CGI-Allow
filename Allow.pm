@@ -48,7 +48,7 @@ our %blacklist_agents = (
 	'Mozilla/5.0 zgrab/0.x' => 'zgrab',
 	'Mozilla/5.0 (compatible; IODC-Odysseus Survey 21796-100-051215155936-107; +https://iodc.co.uk)' => 'iodc',
 	'Mozilla/5.0 (compatible; adscanner/)' => 'adscanner',
-	'http://www.semrush.com/bot.html' => 'SemrushBot',
+	'Mozilla/5.0 (compatible; SemrushBot/6~bl; +http://www.semrush.com/bot.html)' => 'SemrushBot',
 	'ZoominfoBot (zoominfobot at zoominfo dot com)' => 'zoominfobot',
 );
 
@@ -111,7 +111,7 @@ sub allow {
 		Data::Throttler->import();
 
 		# Handle YAML Errors
-		my $db_file = File::Spec->catfile($info->tmpdir(), '/throttle');
+		my $db_file = File::Spec->catfile($info->tmpdir(), 'throttle');
 		eval {
 			my $throttler = Data::Throttler->new(
 				max_items => 15,
