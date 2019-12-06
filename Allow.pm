@@ -62,11 +62,6 @@ sub allow {
 		return 1;
 	}
 
-	if(defined($status{$addr})) {
-		# Cache the value
-		return $status{$addr};
-	}
-
 	my %args = (ref($_[0]) eq 'HASH') ? %{$_[0]} : @_;
 
 	my $logger = $args{'logger'};
@@ -78,8 +73,6 @@ sub allow {
 		}
 		return $status{$addr};
 	}
-
-
 	if($logger) {
 		$logger->trace('In ', __PACKAGE__);
 	}
