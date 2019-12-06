@@ -151,7 +151,7 @@ sub allow {
 
 		if(defined($ENV{'REQUEST_METHOD'}) && ($ENV{'REQUEST_METHOD'} eq 'GET')) {
 			my $params = $info->params();
-			if(defined($params) && keys(%{$params})) {
+			if(defined($params) && scalar(%{$params})) {
 				require CGI::IDS;
 				CGI::IDS->import();
 

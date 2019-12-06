@@ -19,13 +19,7 @@ perl:
 
 sudo: false
 
-before_install:
-  # - sudo apt-get update -q
-  # - sudo apt-get install sqlite3 libdbi-perl libdbd-sqlite3-perl
-  - cpanm -iqn Devel::Cover::Report::Coveralls Test::Script Test::Pod::Spelling::CommonMistakes Test::Portability::Files Test::Taint Test::Carp
-
 install:
-  - cpanm -iqn Carp Data::Throttler CGI::IDS Data::Validate::URI DateTime LWP::Simple XML::LibXML B::Lint warnings::unused
   - cpanm -iqn Carp Data::Throttler CGI::IDS Data::Validate::URI DateTime LWP::Simple XML::LibXML B::Lint warnings::unused
 
 script:
@@ -40,7 +34,7 @@ jobs:
       before_install:
         - cinst -y strawberryperl
         - export "PATH=/c/Strawberry/perl/site/bin:/c/Strawberry/perl/bin:/c/Strawberry/c/bin:$PATH"
-      install:
+      # install:
         # - cpanm --notest --installdeps .
       script:
         - perl -MO=Lint Allow.pm
