@@ -1,7 +1,7 @@
 package CGI::Allow;
 
 # Author Nigel Horne: njh@bandsman.co.uk
-# Copyright (C) 2014-2019, Nigel Horne
+# Copyright (C) 2014-2020, Nigel Horne
 
 # Usage is subject to licence terms.
 # The licence terms of this software are as follows:
@@ -131,7 +131,7 @@ sub allow {
 
 		unless($addr =~ /^192\.168\./) {
 			my $lingua = $args{'lingua'};
-			if(defined($lingua) && $blacklist_countries{uc($lingua->country())}) {
+			if(defined($lingua) && $lingua->country() && $blacklist_countries{uc($lingua->country())}) {
 				if($logger) {
 					$logger->warn("$addr blocked connexion from ", $lingua->country());
 				}
