@@ -12,7 +12,7 @@ Data::Throttler
 Carp
 CGI::IDS
 DateTime;
-LWP::Simple;
+LWP::Simple::WithCache;
 XML::LibXML;
 
 You can pass a logger argument for tracing what's going on.  logger should point to an object which takes methods such as trace,
