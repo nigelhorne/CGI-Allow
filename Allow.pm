@@ -211,8 +211,8 @@ sub allow {
 	}
 
 	unless($ips[0]) {
-		require LWP::Simple;
-		LWP::Simple->import();
+		require LWP::Simple::WithCache;
+		LWP::Simple::WithCache->import();
 		require XML::LibXML;
 		XML::LibXML->import();
 
@@ -221,12 +221,12 @@ sub allow {
 		}
 		my $xml;
 		eval {
-			$xml = XML::LibXML->load_xml(string => get('https://secure.dshield.org/api/sources/attacks/100/2012-03-08'));
+			$xml = XML::LibXML->load_xml(string => LWP::Simple::WithCache::get('https://secure.dshield.org/api/sources/attacks/100/2012-03-08'));
 		};
 		unless($@ || !defined($xml)) {
 			foreach my $source ($xml->findnodes('/sources/data')) {
 				my $lastseen = $source->findnodes('./lastseen')->to_literal();
-				next if($readfromcache && ($lastseen ne $today));  # FIXME: Should be today or yesterday to avoid midnight rush
+				next if($readfromcache && ($lastseen ne $today));	# FIXME: Should be today or yesterday to avoid midnight rush
 				my $ip = $source->findnodes('./ip')->to_literal();
 				$ip =~ s/0*(\d+)/$1/g;	# Perl interprets numbers leading with 0 as octal
 				push @ips, $ip;
