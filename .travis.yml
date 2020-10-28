@@ -20,7 +20,7 @@ perl:
 sudo: false
 
 install:
-  - cpanm -iqn Carp Data::Throttler CGI::IDS Data::Validate::URI DateTime LWP::Simple XML::LibXML B::Lint warnings::unused
+  - cpanm -iqn Carp Data::Throttler CGI::IDS Data::Validate::URI DateTime LWP::Simple::WithCache XML::LibXML B::Lint warnings::unused
 
 script:
   - perl -MO=Lint Allow.pm
