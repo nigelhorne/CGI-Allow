@@ -115,6 +115,7 @@ sub allow {
 			);
 
 			unless($throttler->try_push(key => $addr)) {
+				# Recommend you send HTTP 429 at this point
 				if($logger) {
 					$logger->warn("$addr has been throttled");
 				}
@@ -142,7 +143,7 @@ sub allow {
 			   ($ENV{'HTTP_REFERER'} =~ /^http:\/\/www.tcsindustry\.com\//) ||
 			   ($ENV{'HTTP_REFERER'} =~ /^http:\/\/free-video-tool.com\//)) {
 				if($logger) {
-					$logger->warn("$addr blocked connexion from ", $lingua->country());
+					$logger->warn("$addr: Blocked trawler");
 				}
 				$status{$addr} = 0;
 				return 0;
@@ -187,11 +188,11 @@ sub allow {
 	require DateTime;
 	DateTime->import();
 
-	my $cache = $args{'cache'};
 	my @ips;
 	my $today = DateTime->today()->ymd();
 	my $readfromcache;
 
+	my $cache = $args{'cache'};
 	if(defined($cache)) {
 		my $cachecontent = $cache->get($today);
 		if($cachecontent) {
@@ -207,6 +208,8 @@ sub allow {
 				}
 				$cache->remove($today);
 			}
+		} elsif($logger) {
+			$logger->debug("Can't find $today in the cache");
 		}
 	}
 
