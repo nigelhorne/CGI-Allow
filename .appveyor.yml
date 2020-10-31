@@ -24,7 +24,6 @@ install:
   # - cmd: cd C:\projects\%APPVEYOR_PROJECT_NAME%
   - sh: sudo apt-get update -q -y
   - sh: sudo DEBIAN_FRONTEND=noninteractive apt-get install -q -y --force-yes build-essential git libssl-dev perl
-  - sh: sudo apt-get install -y cpanminus
   - sh: export PATH=/home/appveyor/perl5/bin:$PATH
   - perl -V
   - cmd: mkdir %APPVEYOR_BUILD_FOLDER%\tmp
