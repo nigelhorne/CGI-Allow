@@ -1,0 +1,27 @@
+on:
+  push:
+    branches:
+      - '*'
+    tags-ignore:
+      - '*'
+  pull_request:
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: ['windows-latest', 'macos-latest', 'ubuntu-latest']
+        perl: [ '5.30', '5.28' ]
+    name: Perl ${{ matrix.perl }} on ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v1
+      - name: Setup perl
+        uses: shogo82148/actions-setup-perl@v1
+        with:
+          perl-version: ${{ matrix.perl }}
+      - run: perl -V
+      - name: Run Tests
+        run: |
+          cpanm -iqn Carp Data::Throttler CGI::IDS Data::Validate::URI DateTime LWP::Simple::WithCache XML::LibXML B::Lint warnings::unused
+          perl -MO=Lint Allow.pm
+          perl -cwT -Mwarnings::unused Allow.pm

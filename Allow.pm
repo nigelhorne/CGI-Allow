@@ -130,7 +130,7 @@ sub allow {
 			unlink($db_file);
 		}
 
-		unless($addr =~ /^192\.168\./) {
+		unless(($addr =~ /^192\.168\./) || $info->baidu()) {
 			my $lingua = $args{'lingua'};
 			if(defined($lingua) && $lingua->country() && $blacklist_countries{uc($lingua->country())}) {
 				if($logger) {
@@ -177,7 +177,7 @@ sub allow {
 
 			unless(Data::Validate::URI->new()->is_uri($referer)) {
 				if($logger) {
-					$logger->warn("$addr: Blocked shellshocker for $ENV{HTTP_REFERER}");
+					$logger->warn("$addr: Blocked shellshocker for $referer");
 				}
 				$status{$addr} = 0;
 				return 0;
@@ -211,6 +211,8 @@ sub allow {
 		} elsif($logger) {
 			$logger->debug("Can't find $today in the cache");
 		}
+	} elsif($logger) {
+		$logger->warn('Couldn\'t create the DShield cache');
 	}
 
 	unless($ips[0]) {
