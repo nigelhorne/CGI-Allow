@@ -30,7 +30,8 @@ install:
   - cmd: set TMPDIR=%APPVEYOR_BUILD_FOLDER%\tmp
   - cmd: cpan App::cpanminus
   - cmd: cpanm -iqn --skip-satisfied Carp Data::Throttler CGI::IDS Data::Validate::URI DateTime LWP::Simple::WithCache XML::LibXML B::Lint warnings::unused
-  - sh: cpan -i Carp Data::Throttler CGI::IDS Data::Validate::URI DateTime LWP::Simple::WithCache XML::LibXML B::Lint warnings::unused
+  - sh: cpan -i Carp Data::Throttler CGI::IDS Data::Validate::URI DateTime LWP::Simple::WithCache XML::LibXML warnings::unused
+  - sh: cpan -fi B::Lint
   - cmd: 'echo End install at: & time /t'
 
 build: off
