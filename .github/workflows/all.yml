@@ -20,8 +20,10 @@ jobs:
         with:
           perl-version: ${{ matrix.perl }}
       - run: perl -V
-      - name: Run Tests
+      - name: Install Dependencies
         run: |
           cpanm -iqn Carp Data::Throttler CGI::IDS Data::Validate::URI DateTime LWP::Simple::WithCache XML::LibXML B::Lint warnings::unused
+      - name: Run Tests
+        run: |
           perl -MO=Lint Allow.pm
           perl -cwT -Mwarnings::unused Allow.pm
