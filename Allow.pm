@@ -12,7 +12,7 @@ package CGI::Allow;
 
 # Decide if we're going to allow this client to view the website
 # Usage:
-# unless(CGI::Allow::allow({info => $info, lingua => $lingua})) {
+#	unless(CGI::Allow::allow({info => $info, lingua => $lingua})) {
 
 use strict;
 use warnings;
@@ -181,6 +181,17 @@ sub allow {
 				}
 				$status{$addr} = 0;
 				return 0;
+			}
+		}
+
+		if(my $script_uri = $ENV{'SCRIPT_URI'}) {
+			if(($script_uri =~ /\/shell\.php$/) ||
+			   ($script_uri =~ /\/cmd\.php$/)) {
+				if($logger) {
+					$logger->warn("$addr: Blocked attacker from $addr");
+				}
+				$status{$addr} = 0;
+				throw Error::Simple("$addr: Blocked attacker for $addr");
 			}
 		}
 	}
