@@ -21,7 +21,6 @@ use File::Spec;
 
 use constant DSHIELD => 'https://secure.dshield.org/api/sources/attacks/100/2012-03-08';
 
-
 our %blacklist_countries = (
 	'BY' => 1,
 	'MD' => 1,
@@ -243,7 +242,7 @@ sub allow {
 			if(my $string = LWP::Simple::WithCache::get(DSHIELD)) {
 				$xml = XML::LibXML->load_xml(string => $string);
 			} else {
-				die DSHIELD;
+				warn DSHIELD;
 			}
 		};
 		unless($@ || !defined($xml)) {
