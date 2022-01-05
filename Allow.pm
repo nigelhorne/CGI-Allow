@@ -237,6 +237,7 @@ sub allow {
 		if($logger) {
 			$logger->trace('Downloading DShield signatures');
 		}
+
 		my $xml;
 		eval {
 			if(my $string = LWP::Simple::WithCache::get(DSHIELD)) {
