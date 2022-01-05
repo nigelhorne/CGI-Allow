@@ -1,7 +1,7 @@
 package CGI::Allow;
 
 # Author Nigel Horne: njh@bandsman.co.uk
-# Copyright (C) 2014-2020, Nigel Horne
+# Copyright (C) 2014-2022, Nigel Horne
 
 # Usage is subject to licence terms.
 # The licence terms of this software are as follows:
@@ -18,6 +18,9 @@ use strict;
 use warnings;
 use Carp;
 use File::Spec;
+
+use constant DSHIELD => 'https://secure.dshield.org/api/sources/attacks/100/2012-03-08';
+
 
 our %blacklist_countries = (
 	'BY' => 1,
@@ -237,7 +240,11 @@ sub allow {
 		}
 		my $xml;
 		eval {
-			$xml = XML::LibXML->load_xml(string => LWP::Simple::WithCache::get('https://secure.dshield.org/api/sources/attacks/100/2012-03-08'));
+			if(my $string = LWP::Simple::WithCache::get(DSHIELD)) {
+				$xml = XML::LibXML->load_xml(string => $string);
+			} else {
+				die DSHIELD;
+			}
 		};
 		unless($@ || !defined($xml)) {
 			foreach my $source ($xml->findnodes('/sources/data')) {

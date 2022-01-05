@@ -1,8 +1,9 @@
 CGI-Allow
 =========
 
-Decide whether to allow a client to run a CGI script.  Clearly this should not be your only line of defence, but
-then neither should iptables, mod_security, etc.
+Decide whether to allow a client to run a CGI script.
+Clearly this should not be your only line of defence,
+but then neither should iptables, mod_security, etc.
 
 Install the package in some path.  The prerequesits are:
 
@@ -29,7 +30,8 @@ my $lingua = CGI::Lingua->new();
 my $cache = $CHI->new(driver => 'BerkeleyDB', root_dir => $info->tmpdir(), namespace => $info->script_name());
 
 unless(CGI::Allow::allow({ info => $info, lingua => $lingua, cache => $cache }) {
-	print "403: Forbidden\n\n";
-	print "Go away!\n";
-	die "Disallow access";
+	print "403: Forbidden\n\n",
+		"Go away!\n";
+
+	die 'Disallow access';
 }
