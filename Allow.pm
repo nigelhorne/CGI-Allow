@@ -161,6 +161,7 @@ sub allow {
 					$info->status(403);
 					return 0;
 				}
+
 				foreach my $v (values %{$params}) {
 					if($v eq '/etc/passwd') {
 						if($logger) {
@@ -183,6 +184,7 @@ sub allow {
 				if($logger) {
 					$logger->warn("$addr: Blocked trawler");
 				}
+				$info->status(403);
 				$status{$addr} = 0;
 				return 0;
 			}
@@ -195,6 +197,7 @@ sub allow {
 					$logger->warn("$addr: Blocked shellshocker for $referer");
 				}
 				$status{$addr} = 0;
+				$info->status(403);
 				return 0;
 			}
 		}
