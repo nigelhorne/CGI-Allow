@@ -157,6 +157,7 @@ sub allow {
 						$logger->warn("$addr: IDS blocked connexion for ", $info->as_string());
 					}
 					$status{$addr} = 0;
+					$info->status(403);
 					return 0;
 				}
 			}
