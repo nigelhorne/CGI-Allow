@@ -19,8 +19,9 @@ XML::LibXML;
 You can pass a logger argument for tracing what's going on.  logger should point to an object which takes methods such as trace,
 debug, warn, info.  Log4perl is a good example.
 
-Daily DShield signatures are downloaded.  To speed things up a *lot* you should use give the cache argument, otherwise each
-call will result in a data download from dshield.org and you really don't want that. The cache object is an object which
+Daily DShield signatures are downloaded.
+To speed things up a *lot* you should use give the cache argument,
+otherwise each call will result in a data download from dshield.org and you really don't want that. The cache object is an object which
 takes get and set as methods.  I use CHI.
 
 The run the code:

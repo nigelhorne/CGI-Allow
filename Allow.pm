@@ -1,7 +1,7 @@
 package CGI::Allow;
 
 # Author Nigel Horne: njh@bandsman.co.uk
-# Copyright (C) 2014-2022, Nigel Horne
+# Copyright (C) 2014-2023, Nigel Horne
 
 # Usage is subject to licence terms.
 # The licence terms of this software are as follows:
@@ -140,6 +140,7 @@ sub allow {
 					$logger->warn("$addr blocked connexion from ", $lingua->country());
 				}
 				$status{$addr} = 0;
+				$info->status(403);
 				return 0;
 			}
 		}
@@ -159,6 +160,16 @@ sub allow {
 					$status{$addr} = 0;
 					$info->status(403);
 					return 0;
+				}
+				foreach my $v (values %{$params}) {
+					if($v eq '/etc/passwd') {
+						if($logger) {
+							$logger->warn("$addr: blocked connexion attempt for /etc/passwd from ", $info->as_string());
+						}
+						$status{$addr} = 0;
+						$info->status(403);
+						return 0;
+					}
 				}
 			}
 		}
