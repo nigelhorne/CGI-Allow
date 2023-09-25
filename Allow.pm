@@ -153,13 +153,17 @@ sub allow {
 
 				my $ids = CGI::IDS->new();
 				$ids->set_scan_keys(scan_keys => 1);
-				if($ids->detect_attacks(request => $params) > 0) {
+				my $impact = $ids->detect_attacks(request => $params);
+				if($impact > 0) {
 					if($logger) {
-						$logger->warn("$addr: IDS blocked connexion for ", $info->as_string());
+						$logger->warn("$addr: IDS blocked connexion for ", $info->as_string(), " impact = $impact");
+						$logger->warn(Data::Dumper->new([$ids->get_attacks()]));
 					}
-					$status{$addr} = 0;
-					$info->status(403);
-					return 0;
+					if($impact > 30) {
+						$status{$addr} = 0;
+						$info->status(403);
+						return 0;
+					}
 				}
 
 				foreach my $v (values %{$params}) {
