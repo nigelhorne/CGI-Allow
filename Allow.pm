@@ -22,7 +22,7 @@ use File::Spec;
 use constant DSHIELD => 'https://secure.dshield.org/api/sources/attacks/100/2012-03-08';
 
 # Blacklist of country codes (hardcoded for now)
-my %blacklist = map { $_ => 1 } qw(
+my %blacklist_countries = map { $_ => 1 } qw(
 	BG BR CN CO CY IN IR KR LT MA MD MX PK RS RU SA TR TW UY VE VN ZA
 );
 
