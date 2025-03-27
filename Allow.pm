@@ -103,7 +103,7 @@ sub allow {
 			);
 
 			unless($throttler->try_push(key => $addr)) {
-				# Recommend you send HTTP 429 at this point
+				$info->status(429);
 				if($logger) {
 					$logger->warn("$addr has been throttled");
 				}
