@@ -138,7 +138,7 @@ sub allow {
 
 				my $ids = CGI::IDS->new();
 				$ids->set_scan_keys(scan_keys => 1);
-				delete($params->{'fbclid'});    # Facebook key is OK
+				delete($params->{'fbclid'});	# Facebook key is OK
 				my $impact = $ids->detect_attacks(request => $params);
 				if($impact > 0) {
 					if($logger) {
@@ -248,15 +248,15 @@ sub allow {
 		eval {
 			if(my $string = LWP::Simple::WithCache::get(DSHIELD)) {
 				$xml = XML::LibXML->load_xml(string => $string);
-                        } elsif($logger) {
-                                $logger->warn("Couldn't download ", DSHIELD);
-                                delete $status{$addr};	# Try again
-                                return 1;
-                        } else {
-                                warn DSHIELD;
-                                delete $status{$addr};	# Try again
-                                return 1;
-                        }
+			} elsif($logger) {
+				$logger->warn("Couldn't download ", DSHIELD);
+				delete $status{$addr};	# Try again
+				return 1;
+			} else {
+				warn DSHIELD;
+				delete $status{$addr};	# Try again
+				return 1;
+			}
 		};
 		unless($@ || !defined($xml)) {
 			foreach my $source ($xml->findnodes('/sources/data')) {
