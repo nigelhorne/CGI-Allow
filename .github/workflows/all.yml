@@ -13,19 +13,20 @@ jobs:
     strategy:
       matrix:
         os: ['windows-latest', 'macos-latest', 'ubuntu-latest']
-        perl: [ '5.30', '5.28' ]
+        perl: [ '5.38', '5.36', '5.34', '5.32', '5.30', '5.28' ]
     name: Perl ${{ matrix.perl }} on ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - name: Setup perl
-        uses: shogo82148/actions-setup-perl@v1
+        uses: shogo82148/actions-setup-perl@a198315ec4e9244f206879ea7b63078003aec8a6 # v1
         with:
           perl-version: ${{ matrix.perl }}
       - run: perl -V
       - name: Install Dependencies
         run: |
           cpanm -iqn Carp Data::Throttler CGI::IDS Data::Validate::URI DateTime LWP::Simple::WithCache XML::LibXML B::Lint warnings::unused
-      - name: Run Tests
+      - name: Lint, Syntax & Tests
         run: |
           perl -MO=Lint Allow.pm
           perl -cwT -Mwarnings::unused Allow.pm
+          prove t/
